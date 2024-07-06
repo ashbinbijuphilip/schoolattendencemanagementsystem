@@ -20,6 +20,66 @@ function loadData() {
     students = [];
   }
 }
+function showDashboard() {
+  if (!isLoggedIn) {
+      showLoginForm();
+      return;
+  }
+  hideAllSections();
+  document.getElementById("dashboard").style.display = "block";
+  updateDashboard();
+}
+
+function showAddStudent() {
+  if (!isLoggedIn) {
+      showLoginForm();
+      return;
+  }
+  hideAllSections();
+  document.getElementById("add-student").style.display = "block";
+}
+
+function showStudentList() {
+  if (!isLoggedIn) {
+      showLoginForm();
+      return;
+  }
+  hideAllSections();
+  document.getElementById("student-list").style.display = "block";
+  updateStudentList();
+}
+
+function showMarkAttendance() {
+  if (!isLoggedIn) {
+      showLoginForm();
+      return;
+  }
+  hideAllSections();
+  document.getElementById("mark-attendance").style.display = "block";
+  document.getElementById("attendance-date").valueAsDate = new Date();
+  document.getElementById("attendance-period").value = 'full';
+  updateMarkAttendance();
+}
+
+function showAttendanceView() {
+  if (!isLoggedIn) {
+      showLoginForm();
+      return;
+  }
+  hideAllSections();
+  document.getElementById("view-attendance").style.display = "block";
+  document.getElementById("view-attendance-date").valueAsDate = new Date();
+  updateAttendanceView();
+}
+
+function showReports() {
+  if (!isLoggedIn) {
+      showLoginForm();
+      return;
+  }
+  hideAllSections();
+  document.getElementById("reports").style.display = "block";
+}
 
 function saveData() {
   try {
@@ -52,27 +112,27 @@ function login() {
   const username = document.getElementById('username').value;
   const password = document.getElementById('password').value;
   rememberMe = document.getElementById('remember-me').checked;
-  
+
   if (username === 'admin' && password === 'password') { // Replace with secure authentication
-    isLoggedIn = true;
-    if (rememberMe) {
-      localStorage.setItem('rememberedUser', JSON.stringify({ username, password }));
-    } else {
-      localStorage.removeItem('rememberedUser');
-    }
-    showDashboard();
-    toggleBottomNav();
+      isLoggedIn = true;
+      if (rememberMe) {
+          localStorage.setItem('rememberedUser', JSON.stringify({ username, password }));
+      } else {
+          localStorage.removeItem('rememberedUser');
+      }
+      showDashboard();
+      toggleBottomNav();
   } else {
-    document.getElementById('login-error').textContent = 'Invalid username or password';
+      document.getElementById('login-error').textContent = 'Invalid username or password';
   }
 }
 
 function logout() {
   isLoggedIn = false;
   if (!rememberMe) {
-    document.getElementById('username').value = '';
-    document.getElementById('password').value = '';
-    document.getElementById('remember-me').checked = false;
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+      document.getElementById('remember-me').checked = false;
   }
   showLoginForm();
   document.getElementById('bottom-nav').style.display = 'none';
@@ -642,9 +702,9 @@ window.addEventListener('beforeunload', function() {
 function toggleBottomNav() {
   const bottomNav = document.getElementById('bottom-nav');
   if (window.innerWidth <= 768 && isLoggedIn) {
-    bottomNav.style.display = 'flex';
+      bottomNav.style.display = 'flex';
   } else {
-    bottomNav.style.display = 'none';
+      bottomNav.style.display = 'none';
   }
 }
 

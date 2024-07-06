@@ -32,7 +32,7 @@
                     <a href="#" onclick="showAddStudent()">Add Student</a>
                     <a href="#" onclick="showStudentList()">View Students</a>
                     <a href="#" onclick="showMarkAttendance()">Mark Attendance</a>
-                    <a href="#" onclick="showAttendance()">View Attendance</a>
+                    <a href="#" onclick="showAttendanceView()">View Attendance</a>
                     <a href="#" onclick="showReports()">Generate Reports</a>
                     <a href="#" id="delete-all-data">Delete All Data</a>
                     <a href="#" onclick="logout()">Logout</a>
@@ -99,6 +99,8 @@
                     <option value="morning">Morning</option>
                     <option value="afternoon">Afternoon</option>
                 </select>
+                <input type="text" id="attendance-search" placeholder="Search students" oninput="searchAttendanceStudents()">
+                <button id="mark-all-present" onclick="markAllPresent()">Mark Remaining Present</button>
                 <div id="attendance-list"></div>
                 <button onclick="saveAttendance()">Save Attendance</button>
             </div>
@@ -132,9 +134,8 @@
 
     <div class="bottom-nav" id="bottom-nav" style="display: none;">
         <a href="#" onclick="showDashboard()"><i class="fas fa-home"></i></a>
-        <a href="#" onclick="showAddStudent()"><i class="fas fa-user-plus"></i></a>
-        <a href="#" onclick="showStudentList()"><i class="fas fa-list"></i></a>
         <a href="#" onclick="showMarkAttendance()"><i class="fas fa-check-square"></i></a>
+        <a href="#" onclick="showStudentList()"><i class="fas fa-list"></i></a>
         <a href="#" onclick="showAttendance()"><i class="fas fa-calendar-alt"></i></a>
     </div>
 

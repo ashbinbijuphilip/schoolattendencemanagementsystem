@@ -2,6 +2,7 @@ let students = [];
 let isLoggedIn = false;
 let rememberMe = false;
 
+
 window.addEventListener('load', function() {
   loadData();
   checkRememberedLogin();
@@ -22,10 +23,10 @@ function loadData() {
 
 function saveData() {
   try {
-    localStorage.setItem('students', JSON.stringify(students));
+      localStorage.setItem('students', JSON.stringify(students));
   } catch (error) {
-    console.error('Error saving data:', error);
-    alert('Failed to save data. Please try again.');
+      console.error('Error saving data:', error);
+      alert('Failed to save data. Please try again.');
   }
 }
 
@@ -127,7 +128,6 @@ function updateNotifications() {
   const notifications = [
     { message: 'Submit monthly attendance report', deadline: '2023-07-05' },
     { message: 'Parent-teacher meeting', deadline: '2023-07-15' },
-    // Add more notifications as needed
   ];
   
   notifications.forEach(notification => {
@@ -194,7 +194,6 @@ function updateTimeline() {
     { date: '2023-07-01', event: 'New semester begins' },
     { date: '2023-07-15', event: 'Mid-term exams' },
     { date: '2023-07-30', event: 'Sports day' },
-    // Add more events as needed
   ];
   
   const timeline = document.createElement('ul');
@@ -354,6 +353,36 @@ function deleteStudent(rollNumber) {
   }
 }
 
+function markAttendance(rollNumber, isPresent) {
+  const attendanceDate = document.getElementById("attendance-date").value;
+  const attendancePeriod = document.getElementById("attendance-period").value;
+  const student = students.find(s => s.rollNumber === rollNumber);
+  
+  if (!student.attendance) student.attendance = {};
+  if (!student.attendance[attendanceDate]) {
+      student.attendance[attendanceDate] = { morning: null, afternoon: null };
+  }
+  
+  if (attendancePeriod === 'full') {
+      student.attendance[attendanceDate].morning = isPresent;
+      student.attendance[attendanceDate].afternoon = isPresent;
+  } else {
+      student.attendance[attendanceDate][attendancePeriod] = isPresent;
+  }
+  
+  // Update button colors
+  const card = document.querySelector(`.attendance-card[data-roll="${rollNumber}"]`);
+  if (card) {
+      const presentBtn = card.querySelector('.present');
+      const absentBtn = card.querySelector('.absent');
+      
+      presentBtn.classList.toggle('active', isPresent);
+      absentBtn.classList.toggle('active', !isPresent);
+  }
+
+  // Save data after each attendance marking
+  saveData();
+}
 function updateMarkAttendance() {
   if (!isLoggedIn) return;
 
@@ -361,61 +390,119 @@ function updateMarkAttendance() {
   attendanceList.innerHTML = "";
   const attendanceDate = document.getElementById("attendance-date").value;
   const attendancePeriod = document.getElementById("attendance-period").value;
+  const searchText = document.getElementById("attendance-search").value.toLowerCase();
 
   if (students.length === 0) {
-    attendanceList.innerHTML = "<p>No students found.</p>";
-    return;
+      attendanceList.innerHTML = "<p>No students found.</p>";
+      return;
   }
 
-  students.forEach(student => {
-    const card = document.createElement("div");
-    card.className = "attendance-card";
-    card.innerHTML = `
-      <h3>${student.name} (${student.rollNumber})</h3>
-      <div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="${attendancePeriod}-${student.rollNumber}" 
-                 ${student.attendance[attendanceDate]?.[attendancePeriod] ? 'checked' : ''}>
-          <span class="slider"></span>
-        </label>
-        <span>${attendancePeriod === 'full' ? 'Present' : attendancePeriod.charAt(0).toUpperCase() + attendancePeriod.slice(1)}</span>
-      </div>
-    `;
-    attendanceList.appendChild(card);
+  const filteredStudents = students.filter(student => 
+      student.name.toLowerCase().includes(searchText) || 
+      student.rollNumber.toLowerCase().includes(searchText)
+  );
+
+  filteredStudents.forEach(student => {
+      const card = document.createElement("div");
+      card.className = "attendance-card";
+      card.setAttribute('data-roll', student.rollNumber);
+
+      // Check for saved attendance data
+      let morningAttendance = student.attendance?.[attendanceDate]?.morning;
+      let afternoonAttendance = student.attendance?.[attendanceDate]?.afternoon;
+
+      let isPresent;
+      if (attendancePeriod === 'full') {
+          isPresent = morningAttendance && afternoonAttendance;
+      } else if (attendancePeriod === 'morning') {
+          isPresent = morningAttendance;
+      } else {
+          isPresent = afternoonAttendance;
+      }
+
+      card.innerHTML = `
+          <h3>${student.name} (${student.rollNumber})</h3>
+          <div class="attendance-buttons">
+              <button class="attendance-btn present ${isPresent === true ? 'active' : ''}" onclick="markAttendance('${student.rollNumber}', true)">P</button>
+              <button class="attendance-btn absent ${isPresent === false ? 'active' : ''}" onclick="markAttendance('${student.rollNumber}', false)">A</button>
+          </div>
+      `;
+      attendanceList.appendChild(card);
   });
 }
-
 function saveAttendance() {
   if (!isLoggedIn) return;
 
   const attendanceDate = document.getElementById("attendance-date").value;
-  const attendancePeriod = document.getElementById("attendance-period").value;
-  
   if (!attendanceDate) {
-    alert("Please select a date.");
-    return;
+      alert("Please select a date.");
+      return;
   }
 
-  students.forEach(student => {
-    if (!student.attendance) student.attendance = {};
-    if (!student.attendance[attendanceDate]) {
-      student.attendance[attendanceDate] = { morning: false, afternoon: false };
-    }
-    
-    const isPresent = document.getElementById(`${attendancePeriod}-${student.rollNumber}`).checked;
-    
-    if (attendancePeriod === 'full') {
-      student.attendance[attendanceDate].morning = isPresent;
-      student.attendance[attendanceDate].afternoon = isPresent;
-    } else {
-      student.attendance[attendanceDate][attendancePeriod] = isPresent;
-    }
+  const attendancePeriod = document.getElementById("attendance-period").value;
+  const absentStudents = students.filter(student => {
+      if (attendancePeriod === 'full') {
+          return student.attendance[attendanceDate]?.morning === false || student.attendance[attendanceDate]?.afternoon === false;
+      } else {
+          return student.attendance[attendanceDate]?.[attendancePeriod] === false;
+      }
   });
 
-  saveData();
-  alert(`Attendance for ${attendanceDate} saved successfully.`);
+  if (absentStudents.length > 0) {
+      const absentList = absentStudents.map(student => student.name).join(', ');
+      const confirmPopup = document.createElement('div');
+      confirmPopup.className = 'confirm-popup';
+      confirmPopup.innerHTML = `
+          <h3>Confirm Absent Students</h3>
+          <p>The following students are marked absent:</p>
+          <p>${absentList}</p>
+          <button id="confirm-save">Confirm</button>
+          <button id="cancel-save">Cancel</button>
+      `;
+      document.body.appendChild(confirmPopup);
+
+      document.getElementById('confirm-save').addEventListener('click', () => {
+          saveData();
+          alert(`Attendance for ${attendanceDate} saved successfully.`);
+          document.body.removeChild(confirmPopup);
+      });
+
+      document.getElementById('cancel-save').addEventListener('click', () => {
+          document.body.removeChild(confirmPopup);
+      });
+  } else {
+      saveData();
+      alert(`Attendance for ${attendanceDate} saved successfully.`);
+  }
 }
 
+function markAllPresent() {
+  const attendanceDate = document.getElementById("attendance-date").value;
+  const attendancePeriod = document.getElementById("attendance-period").value;
+  
+  students.forEach(student => {
+      if (!student.attendance) student.attendance = {};
+      if (!student.attendance[attendanceDate]) student.attendance[attendanceDate] = { morning: null, afternoon: null };
+      
+      if (attendancePeriod === 'full') {
+          if (student.attendance[attendanceDate].morning !== false) student.attendance[attendanceDate].morning = true;
+          if (student.attendance[attendanceDate].afternoon !== false) student.attendance[attendanceDate].afternoon = true;
+      } else {
+          if (student.attendance[attendanceDate][attendancePeriod] !== false) {
+              student.attendance[attendanceDate][attendancePeriod] = true;
+          }
+      }
+  });
+  
+  updateMarkAttendance(); // Refresh the display
+}
+function showAttendanceView() {
+  if (!isLoggedIn) return;
+  hideAllSections();
+  document.getElementById("view-attendance").style.display = "block";
+  document.getElementById("view-attendance-date").valueAsDate = new Date();
+  updateAttendanceView();
+}
 function updateAttendanceView() {
   if (!isLoggedIn) return;
 
@@ -492,17 +579,9 @@ function showMarkAttendance() {
   hideAllSections();
   document.getElementById("mark-attendance").style.display = "block";
   document.getElementById("attendance-date").valueAsDate = new Date();
+  document.getElementById("attendance-period").value = 'full'; // Reset period to full day
   updateMarkAttendance();
 }
-
-function showAttendance() {
-  if (!isLoggedIn) return;
-  hideAllSections();
-  document.getElementById("view-attendance").style.display = "block";
-  document.getElementById("view-attendance-date").valueAsDate = new Date();
-  updateAttendanceView();
-}
-
 function showReports() {
   if (!isLoggedIn) return;
   hideAllSections();
@@ -549,6 +628,7 @@ document.addEventListener('click', function(e) {
 });
 
 document.getElementById('attendance-period').addEventListener('change', updateMarkAttendance);
+document.getElementById('attendance-search').addEventListener('input', updateMarkAttendance);
 
 window.addEventListener('load', function() {
   document.getElementById('login-container').style.display = 'flex';
@@ -569,7 +649,7 @@ function toggleBottomNav() {
 }
 
 // Initialize the application
-initApp();
+initApp()
 
 // Additional helper functions
 
@@ -585,3 +665,6 @@ function getWeekNumber(date) {
   const yearStart = new Date(d.getFullYear(), 0, 1);
   return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
 }
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById("attendance-date").addEventListener('change', updateMarkAttendance);
+});

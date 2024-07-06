@@ -260,7 +260,127 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(26px);
 }
+.attendance-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 45%;
+}
 
+.attendance-btn.present {
+    background-color: #ddd;
+    color: black;
+}
+
+.attendance-btn.absent {
+    background-color: #ddd;
+    color: black;
+}
+
+.attendance-btn.active.present {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.attendance-btn.active.absent {
+    background-color: #f44336;
+    color: white;
+}
+
+.attendance-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    padding: 15px;
+}
+
+ 
+.attendance-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 15px;
+  padding: 15px;
+}
+
+.attendance-card h3 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.attendance-buttons {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+.attendance-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  width: 45%;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.attendance-btn.present {
+  background-color: #e6f7e6;
+  color: #4CAF50;
+}
+
+.attendance-btn.absent {
+  background-color: #ffe6e6;
+  color: #f44336;
+}
+
+.attendance-btn.active.present {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.attendance-btn.active.absent {
+  background-color: #f44336;
+  color: white;
+}
+
+#mark-all-present {
+    margin: 10px 0;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+}
+
+#attendance-search {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+.confirm-popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border-radius: 5px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+}
+
+.confirm-popup button {
+  margin-top: 10px;
+  margin-right: 10px;
+}
 @media screen and (max-width: 768px) {
     .dropdown-content {
         position: fixed;
@@ -368,12 +488,39 @@ input:checked + .slider:before {
       flex-direction: column;
       align-items: flex-start;
   }
-
-  .attendance-card h3 {
-      margin-bottom: 10px;
-  }
-
-  .toggle-switch {
-      margin-top: 10px;
-  }
+  .attendance-card {
+    padding: 10px;
 }
+
+.attendance-card h3 {
+    font-size: 14px;
+}
+
+.attendance-btn {
+    padding: 8px 15px;
+    font-size: 14px;
+}
+
+.bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    justify-content: space-around;
+    padding: 10px 0;
+    z-index: 1000;
+}
+
+.bottom-nav a {
+    color: white;
+    text-decoration: none;
+    font-size: 24px;
+}
+
+main {
+    padding-bottom: 60px;
+}
+}
+    

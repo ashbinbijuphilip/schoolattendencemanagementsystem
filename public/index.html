@@ -8,65 +8,33 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="login-container">
-        <div class="card">
-            <h2><i class="fas fa-user-clock"></i> Attendance Manager</h2>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <div class="remember-me">
-                <input type="checkbox" id="remember-me">
-                <label for="remember-me">Remember Me</label>
-            </div>
-            <button onclick="login()">Login</button>
-            <p id="login-error" class="error"></p>
-        </div>
-    </div>
-
-    <div id="app-container" style="display:none;">
+    <div id="app-container">
         <header>
             <h1><i class="fas fa-user-clock"></i> Attendance Manager</h1>
             <div class="dropdown">
                 <button class="dropbtn"><i class="fas fa-bars"></i></button>
                 <div class="dropdown-content">
-                    <a href="#" onclick="showDashboard()">Dashboard</a>
                     <a href="#" onclick="showAddStudent()">Add Student</a>
                     <a href="#" onclick="showStudentList()">View Students</a>
                     <a href="#" onclick="showMarkAttendance()">Mark Attendance</a>
                     <a href="#" onclick="showAttendanceView()">View Attendance</a>
                     <a href="#" onclick="showReports()">Generate Reports</a>
                     <a href="#" id="delete-all-data">Delete All Data</a>
-                    <a href="#" onclick="logout()">Logout</a>
                 </div>
             </div>
         </header>
 
         <main>
-            <div id="dashboard" class="card">
-                <h2>Dashboard</h2>
-                <div class="dashboard-grid">
-                    <div class="key-metrics">
-                        <h3>Key Metrics</h3>
-                        <p>Total Students: <span id="total-students"></span></p>
-                        <p>Today's Attendance: <span id="today-attendance"></span></p>
-                    </div>
-                    <div class="notifications">
-                        <h3>Notifications & Reminders</h3>
-                        <ul id="notifications-list"></ul>
-                    </div>
-                    <div id="calendar-container"></div>
-                    <div id="timeline-container">
-                        <h3>Upcoming Events</h3>
-                    </div>
-                </div>
-            </div>
-
             <div id="add-student" class="card" style="display: none;">
                 <h2>Add/Edit Student</h2>
                 <input type="text" id="student-roll-number" placeholder="Roll Number">
                 <input type="text" id="student-name" placeholder="Student Name">
                 <input type="tel" id="student-phone" placeholder="Phone Number">
-                <input type="text" id="student-class" placeholder="Class">
-                <input type="text" id="student-section" placeholder="Section">
+                <div class="checkbox-container">
+                    <input type="checkbox" id="same-as-phone" onchange="fillWhatsAppNumber()">
+                    <label for="same-as-phone">WhatsApp number same as phone number</label>
+                </div>
+                <input type="tel" id="student-whatsapp" placeholder="WhatsApp Number">
                 <button id="add-edit-student-btn" onclick="addStudent()">Add Student</button>
                 <p id="error-message" class="error"></p>
             </div>
@@ -132,13 +100,14 @@
         </main>
     </div>
 
-    <div class="bottom-nav" id="bottom-nav" style="display: none;">
-        <a href="#" onclick="showDashboard()"><i class="fas fa-home"></i></a>
+    <div class="bottom-nav" id="bottom-nav">
         <a href="#" onclick="showMarkAttendance()"><i class="fas fa-check-square"></i></a>
         <a href="#" onclick="showStudentList()"><i class="fas fa-list"></i></a>
         <a href="#" onclick="showAttendanceView()"><i class="fas fa-calendar-alt"></i></a>
-    </div>
-
+        <a href="#" onclick="showReports()"><i class="fas fa-file-alt"></i></a>
+      </div>
+      
+    <div id="overlay" class="overlay"></div>
     <script src="script.js"></script>
 </body>
 </html>

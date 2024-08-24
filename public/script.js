@@ -3,7 +3,7 @@ let students = [];
 window.addEventListener('load', function() {
   loadData();
   initApp();
-  toggleBottomNav();
+  toggleBottomNav(); // Call toggleBottomNav on load
 });
 
 window.addEventListener('resize', toggleBottomNav);
@@ -89,19 +89,45 @@ function addStudent() {
   if (document.getElementById("add-edit-student-btn").textContent === 'Update Student') {
       verifyAndUpdateStudent(studentData);
   } else {
-      if (confirm(`Please verify the following details before adding:\n\n` +
-                  `Roll Number: ${rollNumber}\n` +
-                  `Name: ${name}\n` +
-                  `Phone: ${phone}\n` +
-                  `WhatsApp: ${whatsapp || 'Not provided'}\n\n` +
-                  "Are these details correct?")) {
+      // Use a custom popup for verification
+      showVerificationPopup(studentData, () => {
           students.push({ ...studentData, attendance: {} });
           showMessage("Student added successfully.", "success");
           saveData();
           clearStudentForm();
           updateStudentList();
-      }
+      });
   }
+}
+
+function showVerificationPopup(studentData, onConfirm) {
+  const overlay = document.getElementById('overlay');
+  const confirmPopup = document.createElement('div');
+  confirmPopup.className = 'confirm-popup';
+  confirmPopup.innerHTML = `
+      <h3>Confirm Student Details</h3>
+      <p>Please verify the following details:</p>
+      <ul>
+          <li>Roll Number: ${studentData.rollNumber}</li>
+          <li>Name: ${studentData.name}</li>
+          <li>Phone: ${studentData.phone}</li>
+          <li>WhatsApp: ${studentData.whatsapp || 'Not provided'}</li>
+      </ul>
+      <div class="popup-buttons">
+          <button id="confirm-add">Confirm</button>
+          <button id="cancel-add">Cancel</button>
+      </div>
+  `;
+
+  overlay.style.display = 'block';
+  document.body.appendChild(confirmPopup);
+
+  document.getElementById('confirm-add').addEventListener('click', () => {
+      onConfirm();
+      closePopup();
+  });
+
+  document.getElementById('cancel-add').addEventListener('click', closePopup);
 }
 function fillWhatsAppNumber() {
   const phoneNumber = document.getElementById("student-phone").value;
@@ -115,18 +141,23 @@ function fillWhatsAppNumber() {
       whatsappNumber.disabled = false;
   }
 }
-function showMessage(message, type = "info") {
-  const messageElement = document.createElement("div");
-  messageElement.textContent = message;
-  messageElement.className = `message ${type}`;
-  
-  // Insert the message after the header
-  const header = document.querySelector('header');
-  header.parentNode.insertBefore(messageElement, header.nextSibling);
 
-  setTimeout(() => {
-    messageElement.remove();
-  }, 3000);
+function showMessage(message, type = "info") {
+  const overlay = document.getElementById('overlay');
+  const popup = document.createElement('div');
+  popup.className = 'confirm-popup';
+  popup.innerHTML = `
+    <h3>${type === 'error' ? 'Error' : 'Success'}</h3>
+    <p>${message}</p>
+    <div class="popup-buttons">
+      <button id="close-message">Close</button>
+    </div>
+  `;
+
+  overlay.style.display = 'block';
+  document.body.appendChild(popup);
+
+  document.getElementById('close-message').addEventListener('click', closePopup);
 }
 
 function handleError(error) {
@@ -161,7 +192,7 @@ function updateStudentList(studentsToShow = students) {
   if (studentsToShow.length === 0) {
     const messageRow = document.createElement("tr");
     const messageCell = document.createElement("td");
-    messageCell.colSpan = 6;
+    messageCell.colSpan = 4; // Adjust colSpan to 4 
     messageCell.textContent = "No students found.";
     messageCell.style.textAlign = "center";
     messageCell.style.padding = "20px";
@@ -189,8 +220,6 @@ function updateStudentList(studentsToShow = students) {
         <td data-label="Roll Number">${student.rollNumber}</td>
         <td data-label="Name">${student.name}</td>
         <td data-label="Phone">${student.phone}</td>
-        <td data-label="Class">${student.class}</td>
-        <td data-label="Section">${student.section}</td>
         <td data-label="Actions">
           <button onclick="editStudent('${student.rollNumber}')">Edit</button>
           <button onclick="deleteStudent('${student.rollNumber}')">Delete</button>
@@ -435,11 +464,18 @@ function updateMarkAttendance() {
 function saveAttendance() {
   const attendanceDate = document.getElementById("attendance-date").value;
   if (!attendanceDate) {
-    alert("Please select a date.");
+    showMessage("Please select a date.", "error");
     return;
   }
 
   const attendancePeriod = document.getElementById("attendance-period").value;
+
+  // Check if there are any students
+  if (students.length === 0) {
+    showMessage("Please add students before marking attendance.", "error");
+    return; 
+  }
+
   const absentStudents = students.filter(student => {
     if (attendancePeriod === 'full') {
       return student.attendance[attendanceDate]?.morning === false || student.attendance[attendanceDate]?.afternoon === false;
@@ -477,14 +513,13 @@ function saveAttendance() {
     document.getElementById('confirm-save').addEventListener('click', () => {
       saveData();
       sendBatchWhatsAppMessages(absentStudents, attendanceDate, attendancePeriod);
-      alert(`Attendance for ${attendanceDate} saved successfully. Batch message prepared for absent students.`);
       closePopup();
     });
 
     document.getElementById('cancel-save').addEventListener('click', closePopup);
   } else {
     saveData();
-    alert(`Attendance for ${attendanceDate} saved successfully.`);
+    showMessage(`Attendance for ${attendanceDate} saved successfully.`, "success");
   }
 }
 
@@ -515,6 +550,9 @@ function sendBatchWhatsAppMessages(students, attendanceDate, attendancePeriod) {
   const whatsappUrl = `https://api.whatsapp.com/send?text=${encodedMessage}`;
   
   window.open(whatsappUrl, '_blank');
+
+  // After opening the WhatsApp window, show the success message
+  showMessage(`Attendance for ${attendanceDate} saved successfully. Batch message prepared for absent students.`, "success"); 
 }
 
 function markAllPresent() {
@@ -599,7 +637,9 @@ function generateAttendanceReport() {
 
 function toggleBottomNav() {
   const bottomNav = document.getElementById('bottom-nav');
-  if (window.innerWidth <= 768) {
+
+  // Use media query to determine screen size
+  if (window.matchMedia('(max-width: 768px)').matches) {
     bottomNav.style.display = 'flex';
   } else {
     bottomNav.style.display = 'none';
@@ -607,12 +647,19 @@ function toggleBottomNav() {
 }
 
 function initApp() {
-  showMarkAttendance(); // Change this line to open Mark Attendance by default
+  showMarkAttendance(); 
   document.getElementById("attendance-date").valueAsDate = new Date();
   document.getElementById("view-attendance-date").valueAsDate = new Date();
   const today = new Date().toISOString().split('T')[0];
   document.getElementById("report-start-date").value = today;
   document.getElementById("report-end-date").value = today;
+  // Initialize Select2 for the attendance period dropdown
+  $(document).ready(function() {
+    $('#attendance-period').select2({
+      width: '100%', 
+      theme: 'bootstrap4' 
+    });
+  });
 }
 
 document.querySelector('.dropbtn').addEventListener('click', function(e) {
@@ -634,7 +681,9 @@ document.getElementById("delete-all-data").addEventListener("click", function() 
   if (confirm("Are you sure you want to delete all saved data? This action cannot be undone.")) {
     localStorage.removeItem('students');
     students = [];
-    updateStudentList();
+    updateStudentList(); 
+    updateMarkAttendance();
+    updateAttendanceView(); 
     alert("All saved data has been deleted.");
   }
 });

@@ -332,6 +332,50 @@ button:hover {
   margin-right: 10px;
 }
 
+/* Additional styling for attendance dropdown */
+#attendance-period {
+    background-color: #f8f8f8; /* Light background */
+    border: 1px solid #ddd; /* Subtle border */
+    border-radius: 4px; /* Rounded corners */
+    padding: 10px; /* More padding */
+    font-size: 16px;
+    width: 100%; /* Adjust width as needed */
+}
+
+#attendance-period option { /* Style the options within the dropdown */
+    color: #333; /* Darker text */
+    padding: 8px; /* Padding for options */
+}
+
+/* Style the arrow to the right of the dropdown */
+#attendance-period::-ms-expand { /* For IE */
+    display: none;
+}
+
+#attendance-period::-ms-expand { /* For Edge */
+    display: none;
+}
+
+/* Style for the bottom navigation */
+.bottom-nav {
+  display: none; /* Hidden by default */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--primary-color);
+  justify-content: space-around;
+  padding: 10px 0;
+  z-index: 1000;
+}
+
+.bottom-nav a {
+  color: white;
+  text-decoration: none;
+  font-size: 24px; /* Adjust icon size as needed */
+}
+
+/* Media Query (Mobile): */
 @media screen and (max-width: 768px) {
   .dropdown-content {
     position: fixed;
@@ -395,21 +439,7 @@ button:hover {
   }
 
   .bottom-nav {
-    display: flex;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background-color: var(--primary-color);
-    justify-content: space-around;
-    padding: 10px 0;
-    z-index: 1000;
-  }
-
-  .bottom-nav a {
-    color: white;
-    text-decoration: none;
-    font-size: 24px;
+    display: flex; /* Show on smaller screens */
   }
 
   main {

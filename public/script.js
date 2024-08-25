@@ -86,18 +86,14 @@ function addStudent() {
       return;
   }
 
-  if (document.getElementById("add-edit-student-btn").textContent === 'Update Student') {
-      verifyAndUpdateStudent(studentData);
-  } else {
-      // Use a custom popup for verification
-      showVerificationPopup(studentData, () => {
-          students.push({ ...studentData, attendance: {} });
-          showMessage("Student added successfully.", "success");
-          saveData();
-          clearStudentForm();
-          updateStudentList();
-      });
-  }
+  // Use a custom popup for verification
+  showVerificationPopup(studentData, () => {
+      students.push({ ...studentData, attendance: {} });
+      showMessage("Student added successfully.", "success");
+      saveData();
+      clearStudentForm();
+      updateStudentList();
+  });
 }
 
 function showVerificationPopup(studentData, onConfirm) {
@@ -252,32 +248,46 @@ function editStudent(rollNumber) {
       
       const addButton = document.getElementById("add-edit-student-btn");
       addButton.textContent = 'Update Student';
-      addButton.onclick = addStudent;  // Changed this line
+      addButton.onclick = () => handleUpdateStudent(rollNumber); // Changed this line
   }
   showAddStudent();
 }
 
-function verifyAndUpdateStudent(updatedStudent) {
-  const originalStudent = students.find(s => s.rollNumber === updatedStudent.rollNumber);
-  const changes = getStudentChanges(originalStudent, updatedStudent);
+function handleUpdateStudent(rollNumber) {
+  const updatedRollNumber = document.getElementById("student-roll-number").value.trim();
+  const name = document.getElementById("student-name").value.trim();
+  const phone = document.getElementById("student-phone").value.trim();
+  const whatsapp = document.getElementById("student-whatsapp").value.trim();
 
-  if (Object.keys(changes).length === 0) {
-      showMessage("No changes were made.", "info");
-      return;
+  const updatedStudentData = { rollNumber: updatedRollNumber, name, phone, whatsapp };
+
+  const errors = validateStudentData(updatedStudentData);
+  if (errors.length > 0) {
+    showMessage(errors.join(" "), "error");
+    return;
   }
 
-  showConfirmationPopup(changes, () => {
-      const index = students.findIndex(s => s.rollNumber === updatedStudent.rollNumber);
-      if (index !== -1) {
-          students[index] = { ...updatedStudent, attendance: originalStudent.attendance || {} };
-          showMessage("Student updated successfully.", "success");
-          saveData();
-          clearStudentForm();
-          updateStudentList();
-      } else {
-          showMessage("Error updating student. Please try again.", "error");
-      }
-  });
+  const existingStudentIndex = students.findIndex(student => student.rollNumber === rollNumber);
+
+  if (existingStudentIndex !== -1) {
+    // Verify changes before updating
+    showConfirmationPopup(getStudentChanges(students[existingStudentIndex], updatedStudentData), () => {
+      // Update the student at the existing index
+      students[existingStudentIndex] = { 
+        ...updatedStudentData,
+        attendance: students[existingStudentIndex].attendance || {}
+      };
+      showMessage("Student updated successfully.", "success");
+      saveData();
+      clearStudentForm();
+      updateStudentList();
+      // Reset the button state back to "Add Student"
+      document.getElementById("add-edit-student-btn").textContent = "Add Student";
+      document.getElementById("add-edit-student-btn").onclick = addStudent;
+    });
+  } else {
+    showMessage("Student not found.", "error");
+  }
 }
 
 function getStudentChanges(original, updated) {
@@ -324,59 +334,6 @@ function showConfirmationPopup(changes, onConfirm) {
 
   document.getElementById('cancel-update').addEventListener('click', closePopup);
 }
-
-function verifyAndUpdateStudent() {
-  const rollNumber = document.getElementById("student-roll-number").value.trim();
-  const name = document.getElementById("student-name").value.trim();
-  const phone = document.getElementById("student-phone").value.trim();
-  const className = document.getElementById("student-class").value.trim();
-  const section = document.getElementById("student-section").value.trim();
-  const whatsapp = document.getElementById("student-whatsapp").value.trim();
-
-  const studentData = { rollNumber, name, phone, class: className, section, whatsapp };
-  const errors = validateStudentData(studentData);
-
-  if (errors.length > 0) {
-    showMessage(errors.join(" "), "error");
-    return;
-  }
-
-  const existingStudentIndex = students.findIndex(student => student.rollNumber === rollNumber);
-  const otherStudentWithSameRoll = students.find((student, index) => 
-    student.rollNumber === rollNumber && index !== existingStudentIndex
-  );
-
-  if (otherStudentWithSameRoll) {
-    showMessage("Another student with the same roll number already exists.", "error");
-    return;
-  }
-
-  if (confirm("Please verify the following details before updating:\n\n" +
-              `Roll Number: ${rollNumber}\n` +
-              `Name: ${name}\n` +
-              `Phone: ${phone}\n` +
-              `Class: ${className}\n` +
-              `Section: ${section}\n` +
-              `WhatsApp: ${whatsapp || 'Not provided'}\n\n` +
-              "Are these details correct?")) {
-    updateStudent(studentData, existingStudentIndex);
-  }
-}
-
-function updateStudent(studentData, existingStudentIndex) {
-  if (existingStudentIndex !== -1) {
-    students[existingStudentIndex] = { ...studentData, attendance: students[existingStudentIndex].attendance || {} };
-    showMessage("Student updated successfully.", "success");
-  } else {
-    students.push({ ...studentData, attendance: {} });
-    showMessage("Student added successfully.", "success");
-  }
-
-  saveData();
-  clearStudentForm();
-  updateStudentList();
-}
-
 
 function deleteStudent(rollNumber) {
   if (confirm('Are you sure you want to delete this student?')) {

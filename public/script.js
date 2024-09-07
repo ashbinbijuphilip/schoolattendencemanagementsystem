@@ -125,11 +125,20 @@ function showVerificationPopup(studentData, onConfirm) {
 
   document.getElementById('cancel-add').addEventListener('click', closePopup);
 }
+
 function fillWhatsAppNumber() {
   const phoneNumber = document.getElementById("student-phone").value;
   const whatsappNumber = document.getElementById("student-whatsapp");
   const sameAsPhone = document.getElementById("same-as-phone");
   
+  // Validate the phone number before enabling the checkbox
+  if (!/^\d{10}$/.test(phoneNumber)) {
+    sameAsPhone.checked = false; // Reset the checkbox
+    whatsappNumber.disabled = false; // Enable WhatsApp field
+    showMessage("Please enter a valid 10-digit phone number.", "error");
+    return;
+  }
+
   if (sameAsPhone.checked) {
       whatsappNumber.value = phoneNumber;
       whatsappNumber.disabled = true;
